@@ -6839,6 +6839,7 @@ addcmd("exit", {"killroblox"}, function(args, speaker)
     game:Shutdown()
 end)
 
+_G.CanDoGenerator = true
 addcmd("generator", {"gen"}, function(args, speaker)
 	if _G.CanDoGenerator == true then
 	for i,v in pairs(workspace:GetDescendants()) do
