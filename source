@@ -4762,6 +4762,7 @@ CMDs[#CMDs + 1] = {NAME = 'listento [player]', DESC = 'Listens to the area aroun
 CMDs[#CMDs + 1] = {NAME = 'unlistento', DESC = 'Disables listento'}
 CMDs[#CMDs + 1] = {NAME = 'jerk', DESC = 'Makes you jork it'}
 CMDs[#CMDs + 1] = {NAME = 'unsuspendvc', DESC = 'Unsuspends you from voice chat'}
+CMDs[#CMDs + 1] = {NAME = 'generator / gen', DESC = 'Automatically does generator'}
 wait()
 
 for i = 1, #CMDs do
@@ -6834,8 +6835,22 @@ addcmd("serverhop", {"shop"}, function(args, speaker)
     end
 end)
 
-addcmd("exit", {}, function(args, speaker)
+addcmd("exit", {"killroblox"}, function(args, speaker)
     game:Shutdown()
+end)
+
+addcmd("generator", {"gen"}, function(args, speaker)
+	if _G.CanDoGenerator == true then
+	for i,v in pairs(workspace:GetDescendants()) do
+	if v:IsA("RemoteEvent") and v.Name == "RE" then
+	v:FireServer()
+	end
+	end
+	end
+	_G.CanDoGenerator = false
+	task.delay(2.6, function()
+	_G.CanDoGenerator = true
+	end)
 end)
 
 local Noclipping = nil
