@@ -4762,7 +4762,13 @@ CMDs[#CMDs + 1] = {NAME = 'listento [player]', DESC = 'Listens to the area aroun
 CMDs[#CMDs + 1] = {NAME = 'unlistento', DESC = 'Disables listento'}
 CMDs[#CMDs + 1] = {NAME = 'jerk', DESC = 'Makes you jork it'}
 CMDs[#CMDs + 1] = {NAME = 'unsuspendvc', DESC = 'Unsuspends you from voice chat'}
-CMDs[#CMDs + 1] = {NAME = 'generator / gen', DESC = 'Automatically does generator'}
+CMDs[#CMDs + 1] = {NAME = 'gen / generator', DESC = 'Automatically does generator'}
+CMDs[#CMDs + 1] = {NAME = 'equipg / equipglove', DESC = 'Equips glove'}
+CMDs[#CMDs + 1] = {NAME = 'kickc / kickcloud [player]', DESC = 'Kicks player (cloud glove required)'}
+CMDs[#CMDs + 1] = {NAME = 'invisibleg / invisibleghost', DESC = 'Makes you invisible (ghost glove required)'}
+CMDs[#CMDs + 1] = {NAME = 'killg / killglove', DESC = 'Kills player (any one-shot glove required)'}
+CMDs[#CMDs + 1] = {NAME = 'smallserverhop / sshop', DESC = 'Serverhops to small server'}
+CMDs[#CMDs + 1] = {NAME = 'copywalkspeed / copyws', DESC = 'Copies the walkspeed of a character to your clipboard'}
 wait()
 
 for i = 1, #CMDs do
@@ -9063,6 +9069,118 @@ end)
 addcmd('unwalkto',{'nowalkto','unfollow','nofollow'},function(args, speaker)
 	walkto = false
 	waypointwalkto = false
+end)
+
+addcmd('copywalkspeed',{'copyws'},function(args, speaker)
+    local players = getPlayer(args[1], speaker)
+    for i,v in pairs(players)do
+        local char = Players[v].Character
+        local hum = char:FindFirstChildWhichIsA("Humanoid")
+	local ws = hum.WalkSpeed
+        if not char or not hum or not ws then
+            return notify('Getwalkspeed Error','Missing humanoid or character')
+        end
+        toClipboard(hum.WalkSpeed)
+    end
+end)
+
+addcmd('equipg',{'equipglove'},function(args, speaker)
+    EquipGlove(args[1])
+end)
+
+addcmd('kickc',{'kickcloud'},function(args, speaker)
+    local target = getPlayer(args[1], speaker)
+    for i,v in pairs(game.workspace.Lobby.brazil:GetChildren()) do
+        if v.CanTouch == true then
+            v.CanTouch = false
+        end
+        if v.CanQuery == true then
+            v.CanQuery = false
+        end
+        if v.CanCollide == true then
+            v.CanCollide = false
+        end
+    end
+    if GloveValue() ~= "Cloud" then
+        EquipGlove("Cloud")
+    end
+    Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(-680,40,500)
+    task.wait(1)
+    ReplicatedStorage.CloudAbility:FireServer()
+    repeat task.wait() until workspace:FindFirstChild(game.Players.LocalPlayer.Name.."_Cloud")
+    game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = workspace:FindFirstChild(game.Players.LocalPlayer.Name.."_Cloud").CFrame
+    repeat task.wait() until workspace.CurrentCamera.CameraSubject ~= target.Character:FindFirstChildWhichIsA("Humanoid")
+    if target and target.Character and target.Character:FindFirstChild("HumanoidRootPart") and target.Character:FindFirstChildWhichIsA("Humanoid") and target.Character:FindFirstChildWhichIsA("Humanoid").Health ~= 0 then
+    repeat task.wait()
+        target.Character.HumanoidRootPart.CFrame = workspace:FindFirstChild(game.Players.LocalPlayer.Name.."_Cloud").CFrame
+    until target.Character.Humanoid.Sit == true
+    task.wait(.15)
+    workspace:FindFirstChild(game.Players.LocalPlayer.Name.."_Cloud").CFrame = CFrame.new(-828, 305, -3)
+    notify("Kicked", "Kicked "..target.Name)
+    end
+end)
+
+addcmd('invisibleg',{'invisibleghost'},function(args, speaker)
+    local oldg = GloveValue()
+    if GloveValue() ~= "Ghost" then
+        EquipGlove("Ghost")
+    end
+    ReplicatedStorage.Ghostinvisibilityactivated:FireServer()
+    task.wait(.1)
+    if GloveValue() ~= oldg then
+        EquipGlove(oldg)
+    end
+end)
+
+addcmd('killg',{'killglove'},function(args, speaker)
+    local target = getPlayer(args[1], speaker)
+    local glovechoosen = false
+    local islink = false
+    if HasGlove("Error") and glovechoosen ~= true then
+        EquipGlove("Error")
+        glovechoosen = true
+        islink = false
+    end
+    if HasGlove("OVERKILL") and glovechoosen ~= true then
+        EquipGlove("OVERKILL")
+        glovechoosen = true
+        islink = false
+    end
+    if HasGlove("The Flex") and glovechoosen ~= true then
+        EquipGlove("The Flex")
+        glovechoosen = true
+        islink = false
+    end
+    if HasGlove("Link") and glovechoosen ~= true then
+        EquipGlove("Link")
+        glovechoosen = true
+        islink = true
+    end
+    old = GetRoot().CFrame
+    local start = tick()
+    while tick() - start < .8 do
+    task.wait()
+    GetRoot().CFrame = target.Character.HumanoidRootPart.CFrame * CFrame.new(0,0,-5)
+    end
+    Slap({[1]=target.Character.HumanoidRootPart})
+    task.wait(.2)
+    GetRoot().CFrame = old
+    if islink == true then
+    Players.LocalPlayer.Character.Humanoid.Health = 0
+    end
+    notify("Killed", "Killed "..target.Name)
+end)
+
+addcmd('smallserverhop',{'sshop'},function(args, speaker)
+    local success, error = pcall(function()
+        local PlaceID = game.PlaceId
+        local v0={};local v1="";local v2=os.date("!*t").hour;local v3=false;local v4=pcall(function() v0=game:GetService("HttpService"):JSONDecode(readfile("SmallServerServerHop-Nexer1234.json"));end);if  not v4 then table.insert(v0,v2);writefile("SmallServerServerHop-Nexer1234.json",game:GetService("HttpService"):JSONEncode(v0));end function TPReturner() local v5;if (v1=="") then v5=game.HttpService:JSONDecode(game:HttpGet("https://games.roblox.com/v1/games/"   .. PlaceID   .. "/servers/Public?sortOrder=Asc&limit=100" ));else v5=game.HttpService:JSONDecode(game:HttpGet("https://games.roblox.com/v1/games/"   .. PlaceID   .. "/servers/Public?sortOrder=Asc&limit=100&cursor="   .. v1 ));end local v6="";if (v5.nextPageCursor and (v5.nextPageCursor~="null") and (v5.nextPageCursor~=nil)) then v1=v5.nextPageCursor;end local v7=0;for v8,v9 in pairs(v5.data) do local v10=true;v6=tostring(v9.id);if (tonumber(v9.maxPlayers)>tonumber(v9.playing)) then for v12,v13 in pairs(v0) do if (v7~=0) then if (v6==tostring(v13)) then v10=false;end elseif (tonumber(v2)~=tonumber(v13)) then local v14=pcall(function() delfile("SmallServerServerHop-Nexer1234.json");v0={};table.insert(v0,v2);end);end v7=v7 + 1 ;end if (v10==true) then table.insert(v0,v6);wait();pcall(function() writefile("SmallServerServerHop-Nexer1234.json",game:GetService("HttpService"):JSONEncode(v0));wait();game:GetService("TeleportService"):TeleportToPlaceInstance(PlaceID,v6,game.Players.LocalPlayer);end);wait(4);end end end end function Teleport() while wait() do pcall(function() TPReturner();if (v1~="") then TPReturner();end end);end end
+        task.wait()
+        while task.wait() do Teleport() end
+    end)
+    if not success then
+        notify("Error", "Failed teleporting: "..error)
+    end
 end)
 
 addcmd("orbit", {}, function(args, speaker)
